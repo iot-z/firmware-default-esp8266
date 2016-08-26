@@ -15,4 +15,4 @@ Default firmware of Module (C++)
 
 # Thanks to
 
-@MarcioLaubstein for teach me some C++ basics
+@MarcioLaubstein for teaching me some C++ basics
