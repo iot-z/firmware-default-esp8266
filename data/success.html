@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IoT-Z | Client Configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+        }
+
+        body {
+            font-weight: 400;
+            font-family: "Helvetica", "Arial", sans-serif;
+            background-color: #f5f5f5;
+            color: #424242;
+            padding-bottom: 20px;
+            min-width: 100%;
+        }
+
+        header {
+            font-size: 20px;
+            line-height: 1;
+            letter-spacing: .02em;
+            padding: 20px 50px;
+        }
+
+        .ribbon {
+            width: 100%;
+            height: 30vh;
+            background-color: #039be5;
+            position: absolute;
+            z-index: 1;
+        }
+
+        form {
+            position: relative;
+            background-color: #FFF;
+            border: 1px solid #e1e1e8;
+            max-width: 640px;
+            width: calc(100% - 40px);
+            border-radius: 2px;
+            margin: 30px auto 0;
+            box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+            z-index: 2;
+        }
+
+        fieldset {
+            margin: 0;
+            padding: 25px;
+            border: 0 solid;
+            border-top: 1px solid #e1e1e8;
+        }
+
+        fieldset:first-child {
+            border-top: 0 solid;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 15px;
+            font-weight: 400;
+        }
+
+        label, input {
+            display: block;
+            font-size: 14px;
+        }
+
+        label {
+            margin-top: 15px;
+        }
+
+        input {
+            margin-top: 5px;
+            padding: 10px 12px;
+            border-radius: 3px;
+            border: solid 1px #ccc;
+            width: 100%;
+        }
+
+        hr {
+            border: solid 0;
+            border-top: solid 1px #e1e1e8;
+        }
+
+        button {
+            border: 0 solid;
+            border-radius: 2px;
+            background-color: #039be5;
+            color: #fff;
+            font-size: 14px;
+            padding: 15px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+            margin-top: 15px;
+            float: right;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #03a9f4;
+        }
+
+        .alert-success {
+            background-color: #4caf50;
+            color: rgba(255,255,255, 0.84);
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media screen and (max-width: 640px) {
+            header {
+                padding: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        IoT-Z | Client Configuration
+    </header>
+    <div class="ribbon"></div>
+    <form method="POST">
+        <fieldset>
+            <div class="alert-success">
+                <strong>Well done!</strong> Data saved with success.
+            </div>
+
+            <h1>Device info</h1>
+            <hr/>
+            <label>
+                Device type
+                <input type="text" name="device-type" value="{{ device-type }}" disabled/>
+            </label>
+            <label>
+                Firmware version
+                <input type="text" name="firmware-version" value="{{ firmware-version }}" disabled/>
+            </label>
+            <label>
+                Device ID
+                <input type="text" name="device-id" value="{{ device-id }}" disabled/>
+            </label>
+            <label>
+                Device name
+                <input type="text" name="device-name" value="{{ device-name }}" placeholder="My Name" disabled/>
+            </label>
+        </fieldset>
+
+        <fieldset>
+            <h1>Connect to</h1>
+            <hr/>
+            <label>
+                SSID
+                <input type="text" name="ssid" value="{{ ssid }}" placeholder="My Network Name" maxlength="50" disabled/>
+            </label>
+            <label>
+                Password
+                <input type="text" name="password" value="{{ password }}" placeholder="123456789" maxlength="32" disabled/>
+            </label>
+        </fieldset>
+    </form>
+</body>
+</html>
