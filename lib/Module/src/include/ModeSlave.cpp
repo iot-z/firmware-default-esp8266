@@ -181,7 +181,13 @@ void ModeSlave::setup()
       });
 
       _lastConnectionTry = millis();
-      protocol.connect(Device.ID, SERVER_IP, SERVER_PORT);
+
+      IPAddress ip;
+      ip.fromString(Config.serverIp);
+
+      uint16_t port = String(Config.serverPort).toInt();
+
+      protocol.connect(Device.ID, ip, port);
     } else {
       #ifdef MODULE_CAN_DEBUG
         Serial.println("UDP Connection failed");

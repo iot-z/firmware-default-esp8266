@@ -23,6 +23,7 @@ class UDPZ
     ~UDPZ();
 
     int16_t setup();
+
     void connect(const char* id, IPAddress ip, uint16_t port);
     void reconnect();
     void disconnect();

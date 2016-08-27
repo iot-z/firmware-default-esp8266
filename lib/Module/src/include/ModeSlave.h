@@ -23,11 +23,6 @@
 // Access point info
 #define RECONNECT_DELAY 500
 
-// Server to connect IP
-// const IPAddress HOMEZ_SERVER_IP(192, 168, 4, 1);
-const IPAddress SERVER_IP(192, 168, 15, 10);
-const uint16_t SERVER_PORT = 4123;
-
 class ModeSlave
 {
   public:

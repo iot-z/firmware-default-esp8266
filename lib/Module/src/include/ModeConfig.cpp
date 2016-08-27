@@ -72,6 +72,8 @@ void ModeConfig::_handleRootPOST()
   String deviceName = server->arg("device-name");
   String ssid       = server->arg("ssid");
   String password   = server->arg("password");
+  String serverIp   = server->arg("server-ip");
+  String serverPort = server->arg("server-port");
 
   #ifdef MODULE_CAN_DEBUG
     Serial.print("Device name: ");
@@ -85,6 +87,8 @@ void ModeConfig::_handleRootPOST()
   strcpy(Config.deviceName, deviceName.c_str());
   strcpy(Config.ssid, ssid.c_str());
   strcpy(Config.password, password.c_str());
+  strcpy(Config.serverIp, serverIp.c_str());
+  strcpy(Config.serverPort, serverPort.c_str());
   strcpy(Config.deviceMode, SLAVE);
 
   Data.save();
@@ -104,6 +108,8 @@ String ModeConfig::_parseHTML(String html)
   html.replace("{{ firmware-version }}", Device.VERSION);
   html.replace("{{ device-id }}", Device.ID);
   html.replace("{{ device-name }}", Config.deviceName);
+  html.replace("{{ server-ip }}", Config.serverIp);
+  html.replace("{{ server-port }}", Config.serverPort);
   html.replace("{{ ssid }}", Config.ssid);
   html.replace("{{ password }}", Config.password);
 

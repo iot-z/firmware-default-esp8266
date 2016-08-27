@@ -12,6 +12,8 @@ struct ConfigStruct
   char deviceName[33];
   char ssid[33];
   char password[64];
+  char serverIp[16]; // uint8_t serverIp[4];
+  char serverPort[6]; //uint16_t serverPort;
 };
 
 extern ConfigStruct Config;
