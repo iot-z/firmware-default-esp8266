@@ -24,10 +24,6 @@
 // Access point info
 #define AP_PASSWORD "123456789"
 
-// Server address
-const IPAddress SERVER_IP(192, 168, 15, 10);
-const uint16_t SERVER_PORT = 4123;
-
 class ModuleCore
 {
   public:
