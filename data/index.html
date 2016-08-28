@@ -147,11 +147,11 @@
             <hr/>
             <label>
                 IP
-                <input type="text" name="server-ip" value="{{ server-ip }}"/>
+                <input type="text" name="server-ip" value="{{ server-ip }}" required pattern="((^|\.)((25[0-5])|(2[0-4]\d)|(1\d\d)|([1-9]?\d))){4}$"/>
             </label>
             <label>
                 Port
-                <input type="text" name="server-port" value="{{ server-port }}"/>
+                <input type="number" name="server-port" value="{{ server-port }}" required/>
             </label>
         </fieldset>
 
