@@ -25,18 +25,77 @@ void ModuleCore::setup(String& id, String& type, String& version)
   _isModeSlave  = strcmp(Config.deviceMode, SLAVE) == 0;
 
   if (_isModeSlave) {
-    _modeSlave = new ModeSlave();
-    _modeSlave->setup();
-  } else if (_isModeConfig) {
-    _modeConfig = new ModeConfig();
+    bool error = false;
+    uint8_t connectionTries = 0;
+    uint8_t maxConnectionTries = 40;
+    int16_t localPort;
 
+    IPAddress ip; ip.fromString(Config.serverIp);
+    uint16_t port = String(Config.serverPort).toInt();
+
+    #ifdef MODULE_CAN_DEBUG
+      Serial.print("Try to connect to: ");
+      Serial.println(Config.ssid);
+      Serial.print("With password: ");
+      Serial.println(Config.password);
+    #endif
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(Config.ssid, Config.password);
+
+    // Wait for connection
+    while (WiFi.status() != WL_CONNECTED) {
+      #ifdef MODULE_CAN_DEBUG
+        Serial.print(".");
+      #endif
+
+      if (connectionTries++ < maxConnectionTries) {
+        delay(500);
+      } else {
+        error = true;
+        break;
+      }
+    }
+
+    if (!error) {
+      #ifdef MODULE_CAN_DEBUG
+        Serial.println();
+        Serial.print("Connected to: ");
+        Serial.println(Config.ssid);
+      #endif
+
+      _modeSlave = new ModeSlave();
+      _modeSlave->setup(ip, port);
+    } else {
+      #ifdef MODULE_CAN_DEBUG
+        Serial.println("Connection failure... Restarting in mode CONFIG...");
+      #endif
+
+      strcpy(Config.deviceMode, CONFIG);
+      Data.save();
+      ESP.restart();
+    }
+  } else if (_isModeConfig) {
     String ssid = "Module - ";
     ssid += Device.TYPE;
     ssid += " (";
     ssid += Config.deviceName[0] != '\0' ? Config.deviceName : String("Unamed ") + String(random(0xffff), HEX);
     ssid += ")";
 
-    _modeConfig->setup(ssid.c_str(), AP_PASSWORD);
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(ssid.c_str(), AP_PASSWORD);
+
+    #ifdef MODULE_CAN_DEBUG
+      Serial.print("SSID: ");
+      Serial.println(ssid);
+      Serial.print("PASS: ");
+      Serial.println(password);
+      Serial.print("Local IP: ");
+      Serial.println(WiFi.softAPIP());
+    #endif
+
+    _modeConfig = new ModeConfig();
+    _modeConfig->setup();
   } else {
     #ifdef MODULE_CAN_DEBUG
       Serial.println("Setup mode Format");

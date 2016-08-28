@@ -98,110 +98,58 @@ int8_t ModeSlave::_findEventIndex(const char* eventName)
   return -1;
 }
 
-void ModeSlave::setup()
+void ModeSlave::setup(IPAddress ip, uint16_t port)
 {
-  bool error = false;
-  uint8_t connectionTries = 0;
-  uint8_t maxConnectionTries = 40;
-  int16_t localPort;
+  uint16_t localPort = protocol.setup();
 
-  #ifdef MODULE_CAN_DEBUG
-    Serial.println("Setup mode ModeSlave");
-    Serial.print("Try to connect to: ");
-    Serial.println(Config.ssid);
-    Serial.print("With password: ");
-    Serial.println(Config.password);
-  #endif
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(Config.ssid, Config.password);
-
-  // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) {
+  if (localPort != -1) {
     #ifdef MODULE_CAN_DEBUG
-      Serial.print("Try: ");
-      Serial.println(connectionTries);
+      Serial.print("UDP connection successful on port: ");
+      Serial.println(localPort);
     #endif
 
-    if (connectionTries++ < maxConnectionTries) {
-      delay(500);
-    } else {
-      error = true;
-      break;
-    }
-  }
+    // Setup button reset to config mode pin
+    pinMode(RESET_BUTTON_PIN, INPUT);
+    resetButtonPin = RESET_BUTTON_PIN;
 
-  if (!error) {
-    #ifdef MODULE_CAN_DEBUG
-      Serial.print("Connected to: ");
-      Serial.println(Config.ssid);
-    #endif
+    attachInterrupt(RESET_BUTTON_PIN, _onPressReset, RISING);
 
-    localPort = protocol.setup();
-
-    if (localPort != -1) {
+    protocol.onConnected([&](){
       #ifdef MODULE_CAN_DEBUG
-        Serial.print("UDP connection successful on port: ");
-        Serial.println(localPort);
+        Serial.println("Connected to the server");
       #endif
 
-      // Setup button reset to config mode pin
-      pinMode(RESET_BUTTON_PIN, INPUT);
-      resetButtonPin = RESET_BUTTON_PIN;
+      StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+      JsonObject& data = jsonBuffer.createObject();
+      data["id"] = Device.ID;
+      data["type"] = Device.TYPE;
+      data["version"] = Device.VERSION;
 
-      attachInterrupt(RESET_BUTTON_PIN, _onPressReset, RISING);
+      String message;
+      data.printTo(message);
 
-      protocol.onConnected([&](){
-        #ifdef MODULE_CAN_DEBUG
-          Serial.println("Connected to the server");
-        #endif
+      send("setDevice", message.c_str());
+    });
 
-        StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-        JsonObject& data = jsonBuffer.createObject();
-        data["id"] = Device.ID;
-        data["type"] = Device.TYPE;
-        data["version"] = Device.VERSION;
-
-        String message;
-        data.printTo(message);
-
-        send("setDevice", message.c_str());
-      });
-
-      protocol.onDisconnected([&](){
-        _lastConnectionTry = millis();
-
-        #ifdef MODULE_CAN_DEBUG
-          Serial.println("Disconnected from the server");
-        #endif
-      });
-
-      protocol.onMessage([&](JsonObject& payload){
-        _onMessage(payload);
-      });
-
+    protocol.onDisconnected([&](){
       _lastConnectionTry = millis();
 
-      IPAddress ip;
-      ip.fromString(Config.serverIp);
-
-      uint16_t port = String(Config.serverPort).toInt();
-
-      protocol.connect(Device.ID, ip, port);
-    } else {
       #ifdef MODULE_CAN_DEBUG
-        Serial.println("UDP Connection failed");
+        Serial.println("Disconnected from the server");
       #endif
-    }
+    });
+
+    protocol.onMessage([&](JsonObject& payload){
+      _onMessage(payload);
+    });
+
+    _lastConnectionTry = millis();
+
+    protocol.connect(Device.ID, ip, port);
   } else {
     #ifdef MODULE_CAN_DEBUG
-      Serial.println("Connection failure... Restarting in mode CONFIG...");
+      Serial.println("UDP Connection failed");
     #endif
-
-    strcpy(Config.deviceMode, CONFIG);
-    Data.save();
-
-    ESP.restart();
   }
 }
 

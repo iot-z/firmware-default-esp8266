@@ -14,7 +14,7 @@ ModeConfig::~ModeConfig()
 {
 }
 
-void ModeConfig::setup(const char*ssid, const char* password)
+void ModeConfig::setup()
 {
   // Init SPIFFS for load the index.html file
   SPIFFS.begin();
@@ -38,19 +38,7 @@ void ModeConfig::setup(const char*ssid, const char* password)
       Serial.println("ERROR on loading \"success.html\" file");
     #endif
   }
-
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP(ssid, password);
-
-  #ifdef MODULE_CAN_DEBUG
-    Serial.print("SSID: ");
-    Serial.println(ssid);
-    Serial.print("PASS: ");
-    Serial.println(password);
-    Serial.print("Local IP: ");
-    Serial.println(WiFi.softAPIP());
-  #endif
-
+  
   // Start the server
   server->on("/", HTTP_GET, std::bind(&ModeConfig::_handleRootGET, this));
   server->on("/", HTTP_POST, std::bind(&ModeConfig::_handleRootPOST, this));

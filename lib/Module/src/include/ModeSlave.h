@@ -32,7 +32,7 @@ class ModeSlave
   uint8_t RESET_BUTTON_PIN = D1;
   uint8_t LED_STATUS_PIN = LED_BUILTIN;
 
-  void setup();
+  void setup(IPAddress ip, uint16_t port);
   void loop();
 
   void send(const char* topic, const char* data);

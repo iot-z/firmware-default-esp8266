@@ -24,7 +24,7 @@ class ModeConfig
   ModeConfig();
   ~ModeConfig();
 
-  void setup(const char*ssid, const char* pass);
+  void setup();
   void loop();
 
   private:
