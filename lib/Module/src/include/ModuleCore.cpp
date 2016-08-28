@@ -35,13 +35,13 @@ void ModuleCore::setup(String& id, String& type, String& version)
 
     #ifdef MODULE_CAN_DEBUG
       Serial.print("Try to connect to: ");
-      Serial.println(Config.ssid);
+      Serial.println(Config.networkSsid);
       Serial.print("With password: ");
-      Serial.println(Config.password);
+      Serial.println(Config.networkPassword);
     #endif
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(Config.ssid, Config.password);
+    WiFi.begin(Config.networkSsid, Config.networkPassword);
 
     // Wait for connection
     while (WiFi.status() != WL_CONNECTED) {
@@ -61,7 +61,7 @@ void ModuleCore::setup(String& id, String& type, String& version)
       #ifdef MODULE_CAN_DEBUG
         Serial.println();
         Serial.print("Connected to: ");
-        Serial.println(Config.ssid);
+        Serial.println(Config.networkSsid);
       #endif
 
       _modeSlave = new ModeSlave();

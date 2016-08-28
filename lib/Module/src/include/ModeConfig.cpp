@@ -38,7 +38,7 @@ void ModeConfig::setup()
       Serial.println("ERROR on loading \"success.html\" file");
     #endif
   }
-  
+
   // Start the server
   server->on("/", HTTP_GET, std::bind(&ModeConfig::_handleRootGET, this));
   server->on("/", HTTP_POST, std::bind(&ModeConfig::_handleRootPOST, this));
@@ -73,8 +73,8 @@ void ModeConfig::_handleRootPOST()
   #endif
 
   strcpy(Config.deviceName, deviceName.c_str());
-  strcpy(Config.ssid, ssid.c_str());
-  strcpy(Config.password, password.c_str());
+  strcpy(Config.networkSsid, ssid.c_str());
+  strcpy(Config.networkPassword, password.c_str());
   strcpy(Config.serverIp, serverIp.c_str());
   strcpy(Config.serverPort, serverPort.c_str());
   strcpy(Config.deviceMode, SLAVE);
@@ -98,8 +98,8 @@ String ModeConfig::_parseHTML(String html)
   html.replace("{{ device-name }}", Config.deviceName);
   html.replace("{{ server-ip }}", Config.serverIp);
   html.replace("{{ server-port }}", Config.serverPort);
-  html.replace("{{ ssid }}", Config.ssid);
-  html.replace("{{ password }}", Config.password);
+  html.replace("{{ ssid }}", Config.networkSsid);
+  html.replace("{{ password }}", Config.networkPassword);
 
   return html;
 }
