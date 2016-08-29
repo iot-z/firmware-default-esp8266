@@ -42,6 +42,7 @@ class ModeSlave
   void createDefaultAPI();
 
   private:
+  UDPZ* protocol;
   unsigned long _startPressReset;
   unsigned long _lastConnectionTry = 0;
 

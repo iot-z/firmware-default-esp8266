@@ -5,9 +5,6 @@
 
 #include "ModeSlave.h"
 
-// USE MQTT or UDP (for UDP comment the line below)
-UDPZ protocol;
-
 // Add interupts for button press (more performance)
 uint8_t resetButtonPin;
 long _startPressReset;
@@ -47,6 +44,7 @@ void _onPressReset(){
 
 ModeSlave::ModeSlave()
 {
+  protocol = new UDPZ(Device.ID, Device.TYPE, Device.VERSION);
 }
 
 ModeSlave::~ModeSlave()
@@ -55,7 +53,7 @@ ModeSlave::~ModeSlave()
 
 void ModeSlave::send(const char* topic, const char* data)
 {
-  protocol.send(topic, data);
+  protocol->send(topic, data);
 }
 
 void ModeSlave::on(const char* eventName, std::function<void(JsonObject&, JsonObject&)> cb)
@@ -100,7 +98,7 @@ int8_t ModeSlave::_findEventIndex(const char* eventName)
 
 void ModeSlave::setup(IPAddress ip, uint16_t port)
 {
-  uint16_t localPort = protocol.setup();
+  uint16_t localPort = protocol->setup();
 
   if (localPort != -1) {
     #ifdef MODULE_CAN_DEBUG
@@ -114,24 +112,13 @@ void ModeSlave::setup(IPAddress ip, uint16_t port)
 
     attachInterrupt(RESET_BUTTON_PIN, _onPressReset, RISING);
 
-    protocol.onConnected([&](){
+    protocol->onConnected([&](){
       #ifdef MODULE_CAN_DEBUG
         Serial.println("Connected to the server");
       #endif
-
-      StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-      JsonObject& data = jsonBuffer.createObject();
-      data["id"] = Device.ID;
-      data["type"] = Device.TYPE;
-      data["version"] = Device.VERSION;
-
-      String message;
-      data.printTo(message);
-
-      send("setDevice", message.c_str());
     });
 
-    protocol.onDisconnected([&](){
+    protocol->onDisconnected([&](){
       _lastConnectionTry = millis();
 
       #ifdef MODULE_CAN_DEBUG
@@ -139,13 +126,13 @@ void ModeSlave::setup(IPAddress ip, uint16_t port)
       #endif
     });
 
-    protocol.onMessage([&](JsonObject& payload){
+    protocol->onMessage([&](JsonObject& payload){
       _onMessage(payload);
     });
 
     _lastConnectionTry = millis();
 
-    protocol.connect(Device.ID, ip, port);
+    protocol->connect(ip, port);
   } else {
     #ifdef MODULE_CAN_DEBUG
       Serial.println("UDP Connection failed");
@@ -155,15 +142,15 @@ void ModeSlave::setup(IPAddress ip, uint16_t port)
 
 void ModeSlave::loop()
 {
-  protocol.loop();
+  protocol->loop();
 
-  if (!protocol.connected()) {
+  if (!protocol->connected()) {
     unsigned long now = millis();
 
     if ((now - _lastConnectionTry) > RECONNECT_DELAY) {
       _lastConnectionTry = now;
 
-      protocol.reconnect();
+      protocol->reconnect();
     }
   }
 }

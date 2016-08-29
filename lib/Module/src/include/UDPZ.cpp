@@ -8,27 +8,44 @@
 WiFiUDP Udp;
 unsigned long now;
 
-UDPZ::UDPZ()
+UDPZ::UDPZ(const char* id, const char* type, const char* version)
 {
-  _isConnected = false;
+  _id           = id;
+  _type         = type;
+  _version      = version;
+  _isConnected  = false;
 }
 
 UDPZ::~UDPZ()
 {
 }
 
-void UDPZ::connect(const char* id, IPAddress ip, uint16_t port)
+
+void UDPZ::_connect()
 {
-  _id   = id;
+  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+  JsonObject& data = jsonBuffer.createObject();
+  data["id"] = _id;
+  data["type"] = _type;
+  data["version"] = _version;
+
+  String message;
+  data.printTo(message);
+
+  send("connect", message.c_str());
+}
+
+void UDPZ::connect(IPAddress ip, uint16_t port)
+{
   _ip   = ip;
   _port = port;
 
-  send("connect", _id);
+  _connect();
 }
 
 void UDPZ::reconnect()
 {
-  send("connect", _id);
+  _connect();
 }
 
 void UDPZ::disconnect()

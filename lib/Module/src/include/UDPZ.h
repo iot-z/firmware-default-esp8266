@@ -19,12 +19,12 @@
 class UDPZ
 {
   public:
-    UDPZ();
+    UDPZ(const char* id, const char* type, const char* version);
     ~UDPZ();
 
     int16_t setup();
 
-    void connect(const char* id, IPAddress ip, uint16_t port);
+    void connect(IPAddress ip, uint16_t port);
     void reconnect();
     void disconnect();
     bool connected();
@@ -40,6 +40,9 @@ class UDPZ
     std::function<void(JsonObject& params)> _onMessageCb;
 
     const char* _id;
+    const char* _type;
+    const char* _version;
+
     IPAddress _ip;
     uint16_t _port;
     unsigned long _lastTalkTime;
@@ -52,6 +55,8 @@ class UDPZ
     IPAddress _remoteIP;
     uint16_t _remotePort;
     #endif
+
+    void _connect();
 };
 
 #endif
