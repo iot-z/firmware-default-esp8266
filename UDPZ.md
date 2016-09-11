@@ -5,7 +5,7 @@ The conversation is based on a event pattern. Will be sent a topic and params, a
 ## Configuration
 - Max packet size: `512B`
 - Client timeout: `250ms without new packet`
-- Ping request frequency: `50ms from packet received`
+- Ping request frequency: `50ms from last packet received`
 
 ## Client
 - Request connect topic: `+`

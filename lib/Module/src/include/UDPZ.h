@@ -29,8 +29,7 @@ class UDPZ
     void disconnect();
     bool connected();
     void loop();
-    void send(const char* topic);
-    void send(const char* topic, const char* data);
+    void send(JsonObject& message);
     void onConnected(std::function<void()> cb);
     void onDisconnected(std::function<void()> cb);
     void onMessage(std::function<void(JsonObject& params)> cb);
@@ -50,11 +49,6 @@ class UDPZ
 
     uint16_t _packetSize;
     char _packetBuffer[PACKET_SIZE];
-
-    #ifdef MODULE_CAN_DEBUG
-    IPAddress _remoteIP;
-    uint16_t _remotePort;
-    #endif
 
     void _connect();
 };

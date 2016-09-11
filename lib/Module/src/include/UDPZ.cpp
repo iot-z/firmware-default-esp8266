@@ -20,19 +20,17 @@ UDPZ::~UDPZ()
 {
 }
 
-
 void UDPZ::_connect()
 {
   StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-  JsonObject& data = jsonBuffer.createObject();
-  data["id"] = _id;
+  JsonObject& message = jsonBuffer.createObject();
+  message["topic"] = "connect";
+
+  JsonObject& data = message.createNestedObject("data");
   data["type"] = _type;
   data["version"] = _version;
 
-  String message;
-  data.printTo(message);
-
-  send("connect", message.c_str());
+  send(message);
 }
 
 void UDPZ::connect(IPAddress ip, uint16_t port)
@@ -50,7 +48,11 @@ void UDPZ::reconnect()
 
 void UDPZ::disconnect()
 {
-  send("disconnect");
+  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+  JsonObject& message = jsonBuffer.createObject();
+  message["topic"] = "disconnect";
+
+  send(message);
 }
 
 bool UDPZ::connected()
@@ -75,7 +77,7 @@ void UDPZ::onMessage(std::function<void(JsonObject& params)> cb)
 
 int16_t UDPZ::setup()
 {
-  uint16_t port      = 4000;
+  uint16_t port      = 4001; // 4000 is the server
   uint16_t portLimit = 5000;
 
   bool error = false;
@@ -106,7 +108,11 @@ void UDPZ::loop()
     JsonObject& params = jsonBuffer.parseObject(_packetBuffer);
 
     if (strcmp(params["topic"], "ping") == 0) { // Ping
-      send("ping");
+      StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+      JsonObject& message = jsonBuffer.createObject();
+      message["topic"] = "ping";
+
+      send(message);
     } else if (strcmp(params["topic"], "disconnect") == 0) { // Disconnect
       _isConnected = false;
 
@@ -117,14 +123,14 @@ void UDPZ::loop()
       _onConnectedCb();
     } else { // Message
       #ifdef MODULE_CAN_DEBUG
-      _remoteIP    = Udp.remoteIP();
-      _remotePort  = Udp.remotePort();
+      IPAddress remoteIP    = Udp.remoteIP();
+      uint16_t remotePort  = Udp.remotePort();
 
       Serial.print(_packetSize);
       Serial.print("B packet received from: ");
-      Serial.print(_remoteIP);
+      Serial.print(remoteIP);
       Serial.print(":");
-      Serial.println(_remotePort);
+      Serial.println(remotePort);
       Serial.print("Message: ");
       params.printTo(Serial);
       Serial.println();
@@ -143,23 +149,12 @@ void UDPZ::loop()
   }
 }
 
-void UDPZ::send(const char* topic)
+void UDPZ::send(JsonObject& message)
 {
-    send(topic, "");
-}
-
-void UDPZ::send(const char* topic, const char* data)
-{
-  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-  JsonObject& message = jsonBuffer.createObject();
-  message["topic"] = topic;
-  message["data"] = data;
-
-  String v;
-  message.printTo(v);
+  message["moduleId"] = _id;
 
   #ifdef MODULE_CAN_DEBUG
-  if (strcmp(topic, "ping") != 0 && strcmp(topic, "connect") != 0 && strcmp(topic, "disconnect") != 0) {
+  if (strcmp((const char*) message["topic"], "ping") != 0) { // Not log PING message
     Serial.print("Send message: ");
     message.printTo(Serial);
     Serial.println();

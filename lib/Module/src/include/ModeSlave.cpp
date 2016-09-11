@@ -51,9 +51,9 @@ ModeSlave::~ModeSlave()
 {
 }
 
-void ModeSlave::send(const char* topic, const char* data)
+void ModeSlave::send(JsonObject& data)
 {
-  protocol->send(topic, data);
+  protocol->send(data);
 }
 
 void ModeSlave::on(const char* eventName, std::function<void(JsonObject&, JsonObject&)> cb)
@@ -164,15 +164,18 @@ void ModeSlave::_onMessage(JsonObject& payload)
     JsonObject& out = jsonBuffer.createObject();
     _cbFunctions[foundIndex](payload["data"], out);
 
-    if (payload.containsKey("id")) {
-      String d;
-      out.printTo(d);
-      send(payload["id"], d.c_str());
+    if (payload.containsKey("messageId")) {
+      StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+      JsonObject& message = jsonBuffer.createObject();
+      message["topic"] = payload["messageId"];
+      message["data"] = out;
+
+      send(message);
     }
   } else {
     #ifdef MODULE_CAN_DEBUG
       Serial.print("Command not found: ");
-      Serial.println(eventName);
+      Serial.println((const char *) payload["topic"]);
     #endif
   }
 }

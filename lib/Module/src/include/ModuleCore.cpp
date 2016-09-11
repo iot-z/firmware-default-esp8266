@@ -89,7 +89,7 @@ void ModuleCore::setup(String& id, String& type, String& version)
       Serial.print("SSID: ");
       Serial.println(ssid);
       Serial.print("PASS: ");
-      Serial.println(password);
+      Serial.println(AP_PASSWORD);
       Serial.print("Local IP: ");
       Serial.println(WiFi.softAPIP());
     #endif
@@ -137,25 +137,41 @@ bool ModuleCore::isModeConfig()
 
 void ModuleCore::send(const char* topic)
 {
-  _modeSlave->send(topic, "");
+  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+  JsonObject& message = jsonBuffer.createObject();
+  message["topic"] = topic;
+
+  _modeSlave->send(message);
 }
 
 void ModuleCore::send(const char* topic, JsonObject& data)
 {
-  String d;
-  data.printTo(d);
+  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+  JsonObject& message = jsonBuffer.createObject();
+  message["topic"] = topic;
+  message["data"] = data;
 
-  _modeSlave->send(topic, d.c_str());
+  _modeSlave->send(message);
 }
 
 void ModuleCore::send(const char* topic, String& data)
 {
-  _modeSlave->send(topic, data.c_str());
+  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+  JsonObject& message = jsonBuffer.createObject();
+  message["topic"] = topic;
+  message["data"] = data.c_str();
+
+  _modeSlave->send(message);
 }
 
 void ModuleCore::send(const char* topic, const char* data)
 {
-  _modeSlave->send(topic, data);
+  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+  JsonObject& message = jsonBuffer.createObject();
+  message["topic"] = topic;
+  message["data"] = data;
+
+  _modeSlave->send(message);
 }
 
 void ModuleCore::on(const char* eventName, std::function<void(JsonObject&, JsonObject&)> cb)

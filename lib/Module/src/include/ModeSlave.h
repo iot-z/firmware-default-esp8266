@@ -35,7 +35,7 @@ class ModeSlave
   void setup(IPAddress ip, uint16_t port);
   void loop();
 
-  void send(const char* topic, const char* data);
+  void send(JsonObject& data);
 
   void on(const char* eventName, std::function<void(JsonObject&, JsonObject&)> cb);
 
