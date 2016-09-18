@@ -14,12 +14,21 @@
 
 // PACKET BUFFER SIZE
 #define PACKET_SIZE 512
-#define TIMEOUT 250
+#define TIMEOUT 500
+
+ /**
+  * Message JSON structure
+  * {
+  *   "moduleId": "",
+  *   "topic": "",
+  *   "data": {}
+  * }
+  */
 
 class UDPZ
 {
   public:
-    UDPZ(const char* id, const char* type, const char* version);
+    UDPZ(const char* id, const char* name, const char* type, const char* version);
     ~UDPZ();
 
     int16_t setup();
@@ -39,6 +48,7 @@ class UDPZ
     std::function<void(JsonObject& params)> _onMessageCb;
 
     const char* _id;
+    const char* _name;
     const char* _type;
     const char* _version;
 

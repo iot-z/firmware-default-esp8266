@@ -44,7 +44,7 @@ void _onPressReset(){
 
 ModeSlave::ModeSlave()
 {
-  protocol = new UDPZ(Device.ID, Device.TYPE, Device.VERSION);
+  protocol = new UDPZ(Device.ID, Config.deviceName, Device.TYPE, Device.VERSION);
 }
 
 ModeSlave::~ModeSlave()

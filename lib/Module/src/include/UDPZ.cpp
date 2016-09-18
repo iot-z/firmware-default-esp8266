@@ -8,9 +8,10 @@
 WiFiUDP Udp;
 unsigned long now;
 
-UDPZ::UDPZ(const char* id, const char* type, const char* version)
+UDPZ::UDPZ(const char* id, const char* name, const char* type, const char* version)
 {
   _id           = id;
+  _name         = name;
   _type         = type;
   _version      = version;
   _isConnected  = false;
@@ -27,6 +28,7 @@ void UDPZ::_connect()
   message["topic"] = "connect";
 
   JsonObject& data = message.createNestedObject("data");
+  data["name"] = _name;
   data["type"] = _type;
   data["version"] = _version;
 
