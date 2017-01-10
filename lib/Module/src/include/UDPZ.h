@@ -57,6 +57,9 @@ class UDPZ
     unsigned long _lastTalkTime;
     bool _isConnected;
 
+    IPAddress _remoteIP;
+    uint16_t _remotePort;
+
     uint16_t _packetSize;
     char _packetBuffer[PACKET_SIZE];
 

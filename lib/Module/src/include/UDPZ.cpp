@@ -100,45 +100,48 @@ void UDPZ::loop()
   _packetSize = Udp.parsePacket();
 
   if (_packetSize) {
-    now = millis();
+    _remoteIP    = Udp.remoteIP();
+    _remotePort  = Udp.remotePort();
 
-    Udp.read(_packetBuffer, _packetSize);
-    _packetBuffer[_packetSize] = '\0';
-    _lastTalkTime = now;
+    if (_remotePort == _port && _remoteIP == _ip) {
+      now = millis();
 
-    StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-    JsonObject& params = jsonBuffer.parseObject(_packetBuffer);
+      Udp.read(_packetBuffer, _packetSize);
+      _packetBuffer[_packetSize] = '\0';
+      _lastTalkTime = now;
 
-    if (strcmp(params["topic"], "ping") == 0) { // Ping
       StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-      JsonObject& message = jsonBuffer.createObject();
-      message["topic"] = "ping";
+      JsonObject& params = jsonBuffer.parseObject(_packetBuffer);
 
-      send(message);
-    } else if (strcmp(params["topic"], "disconnect") == 0) { // Disconnect
-      _isConnected = false;
+      if (strcmp(params["topic"], "ping") == 0) { // Ping
+        StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+        JsonObject& message = jsonBuffer.createObject();
+        message["topic"] = "ping";
 
-      _onDisconnectedCb();
-    } else if (strcmp(params["topic"], "connect") == 0) { // Connect
-      _isConnected = true;
+        send(message);
+      } else if (strcmp(params["topic"], "disconnect") == 0) { // Disconnect
+        _isConnected = false;
 
-      _onConnectedCb();
-    } else { // Message
-      #ifdef MODULE_CAN_DEBUG
-      IPAddress remoteIP    = Udp.remoteIP();
-      uint16_t remotePort  = Udp.remotePort();
+        _onDisconnectedCb();
+      } else if (strcmp(params["topic"], "connect") == 0) { // Connect
+        _isConnected = true;
 
-      Serial.print(_packetSize);
-      Serial.print("B packet received from: ");
-      Serial.print(remoteIP);
-      Serial.print(":");
-      Serial.println(remotePort);
-      Serial.print("Message: ");
-      params.printTo(Serial);
-      Serial.println();
-      #endif
+        _onConnectedCb();
+      } else { // Message
+        #ifdef MODULE_CAN_DEBUG
 
-      _onMessageCb(params);
+        Serial.print(_packetSize);
+        Serial.print("B packet received from: ");
+        Serial.print(remoteIP);
+        Serial.print(":");
+        Serial.println(remotePort);
+        Serial.print("Message: ");
+        params.printTo(Serial);
+        Serial.println();
+        #endif
+
+        _onMessageCb(params);
+      }
     }
   } else if (_isConnected) {
     now = millis();
