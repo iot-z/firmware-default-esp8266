@@ -1,5 +1,5 @@
 /**
- * ModeConfig.cpp
+ * ModeConfig.data.cpp
  * @author: Renan Vaz <renan.c.vaz@gmail.com>
  */
 
@@ -72,14 +72,14 @@ void ModeConfig::_handleRootPOST()
     Serial.println(password);
   #endif
 
-  strcpy(Config.deviceName, deviceName.c_str());
-  strcpy(Config.networkSsid, ssid.c_str());
-  strcpy(Config.networkPassword, password.c_str());
-  strcpy(Config.serverIp, serverIp.c_str());
-  strcpy(Config.serverPort, serverPort.c_str());
-  strcpy(Config.deviceMode, SLAVE);
+  strcpy(Config.data.deviceName, deviceName.c_str());
+  strcpy(Config.data.networkSsid, ssid.c_str());
+  strcpy(Config.data.networkPassword, password.c_str());
+  strcpy(Config.data.serverIp, serverIp.c_str());
+  strcpy(Config.data.serverPort, serverPort.c_str());
+  strcpy(Config.data.deviceMode, SLAVE);
 
-  Data.save();
+  Config.save();
 
   server->send(200, "text/html", _parseHTML(_htmlSuccess));
 
@@ -95,11 +95,11 @@ String ModeConfig::_parseHTML(String html)
   html.replace("{{ device-type }}", Device.TYPE);
   html.replace("{{ firmware-version }}", Device.VERSION);
   html.replace("{{ device-id }}", Device.ID);
-  html.replace("{{ device-name }}", Config.deviceName);
-  html.replace("{{ server-ip }}", Config.serverIp);
-  html.replace("{{ server-port }}", Config.serverPort);
-  html.replace("{{ ssid }}", Config.networkSsid);
-  html.replace("{{ password }}", Config.networkPassword);
+  html.replace("{{ device-name }}", Config.data.deviceName);
+  html.replace("{{ server-ip }}", Config.data.serverIp);
+  html.replace("{{ server-port }}", Config.data.serverPort);
+  html.replace("{{ ssid }}", Config.data.networkSsid);
+  html.replace("{{ password }}", Config.data.networkPassword);
 
   return html;
 }

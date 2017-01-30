@@ -19,29 +19,26 @@ void ModuleCore::setup(String& id, String& type, String& version)
   type.toCharArray(Device.TYPE, 26);
   version.toCharArray(Device.VERSION, 12);
 
-  Data.load();
+  Config.load();
 
-  _isModeConfig = strcmp(Config.deviceMode, CONFIG) == 0;
-  _isModeSlave  = strcmp(Config.deviceMode, SLAVE) == 0;
+  _isModeConfig = strcmp(Config.data.deviceMode, CONFIG) == 0;
+  _isModeSlave  = strcmp(Config.data.deviceMode, SLAVE) == 0;
 
   if (_isModeSlave) {
     bool error = false;
-    uint8_t connectionTries = 0;
-    uint8_t maxConnectionTries = 40;
-    int16_t localPort;
 
-    IPAddress ip; ip.fromString(Config.serverIp);
-    uint16_t port = String(Config.serverPort).toInt();
+    IPAddress ip; ip.fromString(Config.data.serverIp);
+    uint16_t port = String(Config.data.serverPort).toInt();
 
     #ifdef MODULE_CAN_DEBUG
       Serial.print("Try to connect to: ");
-      Serial.println(Config.networkSsid);
+      Serial.println(Config.data.networkSsid);
       Serial.print("With password: ");
-      Serial.println(Config.networkPassword);
+      Serial.println(Config.data.networkPassword);
     #endif
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(Config.networkSsid, Config.networkPassword);
+    WiFi.begin(Config.data.networkSsid, Config.data.networkPassword);
 
     // Wait for connection
     while (WiFi.status() != WL_CONNECTED) {
@@ -49,37 +46,22 @@ void ModuleCore::setup(String& id, String& type, String& version)
         Serial.print(".");
       #endif
 
-      if (connectionTries++ < maxConnectionTries) {
-        delay(500);
-      } else {
-        error = true;
-        break;
-      }
+      delay(500);
     }
 
-    if (!error) {
-      #ifdef MODULE_CAN_DEBUG
-        Serial.println();
-        Serial.print("Connected to: ");
-        Serial.println(Config.networkSsid);
-      #endif
+    #ifdef MODULE_CAN_DEBUG
+      Serial.println();
+      Serial.print("Connected to: ");
+      Serial.println(Config.data.networkSsid);
+    #endif
 
-      _modeSlave = new ModeSlave();
-      _modeSlave->setup(ip, port);
-    } else {
-      #ifdef MODULE_CAN_DEBUG
-        Serial.println("Connection failure... Restarting in mode CONFIG...");
-      #endif
-
-      strcpy(Config.deviceMode, CONFIG);
-      Data.save();
-      ESP.restart();
-    }
+    _modeSlave = new ModeSlave();
+    _modeSlave->setup(ip, port);
   } else if (_isModeConfig) {
     String ssid = "Module - ";
     ssid += Device.TYPE;
     ssid += " (";
-    ssid += Config.deviceName[0] != '\0' ? Config.deviceName : String("Unamed ") + String(random(0xffff), HEX);
+    ssid += Config.data.deviceName[0] != '\0' ? Config.data.deviceName : String("Unamed ") + String(random(0xffff), HEX);
     ssid += ")";
 
     WiFi.mode(WIFI_AP);
@@ -101,12 +83,12 @@ void ModuleCore::setup(String& id, String& type, String& version)
       Serial.println("Setup mode Format");
     #endif
 
-    Data.clear();
-    Data.load();
+    Config.clear(); // Clear EEPROM data
+    Config.load(); // Load a clear data
 
-    strcpy(Config.deviceMode, CONFIG);
+    strcpy(Config.data.deviceMode, CONFIG);
 
-    Data.save();
+    Config.save();
 
     #ifdef MODULE_CAN_DEBUG
       Serial.println("Restarting...");

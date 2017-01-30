@@ -72,7 +72,7 @@ void UDPZ::onDisconnected(std::function<void()> cb)
   _onDisconnectedCb = cb;
 }
 
-void UDPZ::onMessage(std::function<void(JsonObject& params)> cb)
+void UDPZ::onMessage(std::function<void(JsonObject& message)> cb)
 {
   _onMessageCb = cb;
 }
@@ -111,36 +111,35 @@ void UDPZ::loop()
       _lastTalkTime = now;
 
       StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-      JsonObject& params = jsonBuffer.parseObject(_packetBuffer);
+      JsonObject& message = jsonBuffer.parseObject(_packetBuffer);
 
-      if (strcmp(params["topic"], "ping") == 0) { // Ping
+      if (strcmp(message["topic"], "ping") == 0) { // Ping
         StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-        JsonObject& message = jsonBuffer.createObject();
-        message["topic"] = "ping";
+        JsonObject& messagePing = jsonBuffer.createObject();
+        messagePing["topic"] = "ping";
 
-        send(message);
-      } else if (strcmp(params["topic"], "disconnect") == 0) { // Disconnect
+        send(messagePing);
+      } else if (strcmp(message["topic"], "disconnect") == 0) { // Disconnect
         _isConnected = false;
 
         _onDisconnectedCb();
-      } else if (strcmp(params["topic"], "connect") == 0) { // Connect
+      } else if (strcmp(message["topic"], "connect") == 0) { // Connect
         _isConnected = true;
 
         _onConnectedCb();
       } else { // Message
         #ifdef MODULE_CAN_DEBUG
-
         Serial.print(_packetSize);
         Serial.print("B packet received from: ");
         Serial.print(remoteIP);
         Serial.print(":");
         Serial.println(remotePort);
         Serial.print("Message: ");
-        params.printTo(Serial);
+        message.printTo(Serial);
         Serial.println();
         #endif
 
-        _onMessageCb(params);
+        _onMessageCb(message);
       }
     }
   } else if (_isConnected) {
@@ -156,14 +155,12 @@ void UDPZ::loop()
 
 void UDPZ::send(JsonObject& message)
 {
-  message["moduleId"] = _id;
+  message["module"] = _id;
 
   #ifdef MODULE_CAN_DEBUG
-  if (strcmp((const char*) message["topic"], "ping") != 0) { // Not log PING message
     Serial.print("Send message: ");
     message.printTo(Serial);
     Serial.println();
-  }
   #endif
 
   Udp.beginPacket(_ip, _port);

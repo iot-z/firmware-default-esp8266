@@ -4,28 +4,59 @@ The conversation is based on a event pattern. Will be sent a topic and params, a
 
 ## Configuration
 - Max packet size: `512B`
-- Client timeout: `250ms without new packet`
-- Ping request frequency: `50ms from last packet received`
+- Client timeout: `15s without new packet`
+- Ping request frequency: `7s from last packet received`
 
 ## Client
-- Request connect topic: `+`
-- Request disconnect topic: `-`
-- Response ping topic: `.`
+- Request connect message:
+```json
+{
+  "topic": "connect",
+  "data": {
+    "name": "[NAME]",
+    "type": "[TYPE]",
+    "version": "[VERSION]"
+  }
+}
+```
+
+- Request disconnect message:
+```json
+{
+  "topic": "disconnect"
+}
+```
+
+- Response ping message:
+```json
+{
+  "topic": "ping"
+}
+```
 
 ## Server
-- Response connect topic: `+`
+- Response connect topic: `disconnect`
 - Request ping topic: `.`
 
 ## Messages
-The pattern of messages is: `topic:params`
+Messages are JSON strings with this pattern:
 
-The demilitter beetwen `topic` and `params` is the `:` character
+```json
+{
+  "topic": "topic-name",
+  "data": {}
+}
+```
 
-Params can be passed separeted with a `|` (pipe), eg: `topic:param1|param2|paramN`  
-Note: Max 5 params can be handled by Module
-Note: All params will be sent as string
+All messages from the module will have a param named `module`, appended by the lib UDPZ, with the id of the module, eg:
+```json
+{
+  "module": "the-module-id-GUID",
+  "topic": "topic-name",
+  "data": {}
+}
+```
 
-It will be received like a event and each param like a argument:
 
 *JavaScript example*
 
@@ -43,7 +74,8 @@ It will be received like a event and each param like a argument:
 
 ```js
   // Send
-  Module.send("topic", "param1|param2|paramN");
+  Module.send("topic");
+  Module.send("topic", JsonObject& data);
 
   // Receive
   Module.on("topic", [&](String* params)) {

@@ -19,15 +19,15 @@ void _onReleaseReset(){
       Serial.println("Long button reset press.");
     #endif
 
-    Data.clear();
+    Config.clear();
   } else {
     #ifdef MODULE_CAN_DEBUG
       Serial.println("Button reset press.");
     #endif
   }
 
-  strcpy(Config.deviceMode, CONFIG);
-  Data.save();
+  strcpy(Config.data.deviceMode, CONFIG);
+  Config.save();
 
   #ifdef MODULE_CAN_DEBUG
     Serial.println("Restarting...");
@@ -44,7 +44,7 @@ void _onPressReset(){
 
 ModeSlave::ModeSlave()
 {
-  protocol = new UDPZ(Device.ID, Config.deviceName, Device.TYPE, Device.VERSION);
+  protocol = new UDPZ(Device.ID, Config.data.deviceName, Device.TYPE, Device.VERSION);
 }
 
 ModeSlave::~ModeSlave()
@@ -102,7 +102,7 @@ void ModeSlave::setup(IPAddress ip, uint16_t port)
 
   if (localPort != -1) {
     #ifdef MODULE_CAN_DEBUG
-      Serial.print("UDP connection successful on port: ");
+      Serial.print("UDP address assigned on port: ");
       Serial.println(localPort);
     #endif
 

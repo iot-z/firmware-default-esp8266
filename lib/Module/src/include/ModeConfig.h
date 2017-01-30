@@ -16,7 +16,6 @@
 #include "Modes.h"
 #include "Device.h"
 #include "Config.h"
-#include "Data.h"
 
 class ModeConfig
 {
