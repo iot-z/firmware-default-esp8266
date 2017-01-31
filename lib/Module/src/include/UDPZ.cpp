@@ -155,7 +155,7 @@ void UDPZ::loop()
 
 void UDPZ::send(JsonObject& message)
 {
-  message["module"] = _id;
+  message["moduleId"] = _id;
 
   #ifdef MODULE_CAN_DEBUG
     Serial.print("Send message: ");
