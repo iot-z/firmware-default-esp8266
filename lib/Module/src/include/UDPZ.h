@@ -14,7 +14,6 @@
 
 // PACKET BUFFER SIZE
 #define PACKET_SIZE 512
-#define TIMEOUT 500
 
  /**
   * Message JSON structure
@@ -59,6 +58,8 @@ class UDPZ
 
     IPAddress _remoteIP;
     uint16_t _remotePort;
+
+    uint16_t _timeout;
 
     uint16_t _packetSize;
     char _packetBuffer[PACKET_SIZE];

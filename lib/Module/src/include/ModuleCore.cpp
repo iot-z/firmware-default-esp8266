@@ -5,6 +5,50 @@
 
 #include "ModuleCore.h"
 
+
+// Add interupts for button press (more performance)
+uint8_t resetButtonPin;
+long _startPressReset;
+
+void _onReleaseReset()
+{
+  uint16_t holdTime = (uint16_t) (millis() - _startPressReset);
+
+  detachInterrupt(resetButtonPin);
+
+  if (holdTime > 15000) {
+    #ifdef MODULE_CAN_DEBUG
+      Serial.println("Long button reset press (15s). Clear data.");
+    #endif
+
+    Config.clear();
+  } else if (holdTime > 5000) {
+    #ifdef MODULE_CAN_DEBUG
+      Serial.println("Long button reset press (5s). Config mode.");
+    #endif
+
+    strcpy(Config.data.deviceMode, CONFIG);
+    Config.save();
+  } else {
+    #ifdef MODULE_CAN_DEBUG
+      Serial.println("Button reset press.");
+    #endif
+  }
+
+  #ifdef MODULE_CAN_DEBUG
+    Serial.println("Restarting...");
+  #endif
+
+  ESP.restart();
+}
+
+void _onPressReset()
+{
+  _startPressReset = millis();
+  detachInterrupt(resetButtonPin);
+  attachInterrupt(resetButtonPin, _onReleaseReset, FALLING);
+}
+
 ModuleCore::ModuleCore()
 {
 }
@@ -20,6 +64,12 @@ void ModuleCore::setup(String& id, String& type, String& version)
   version.toCharArray(Device.VERSION, 12);
 
   Config.load();
+
+  // Setup button reset to config mode pin
+  pinMode(RESET_BUTTON_PIN, INPUT);
+  resetButtonPin = RESET_BUTTON_PIN;
+
+  attachInterrupt(RESET_BUTTON_PIN, _onPressReset, RISING);
 
   _isModeConfig = strcmp(Config.data.deviceMode, CONFIG) == 0;
   _isModeSlave  = strcmp(Config.data.deviceMode, SLAVE) == 0;
@@ -72,7 +122,7 @@ void ModuleCore::setup(String& id, String& type, String& version)
       Serial.println(ssid);
       Serial.print("PASS: ");
       Serial.println(AP_PASSWORD);
-      Serial.print("Local IP: ");
+      Serial.print("Local server address: ");
       Serial.println(WiFi.softAPIP());
     #endif
 

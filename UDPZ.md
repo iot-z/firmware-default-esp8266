@@ -1,4 +1,5 @@
-# UDPZ
+
+ # UDPZ
 Specification of the "protocol".
 The conversation is based on a event pattern. Will be sent a topic and params, and trigged in destination as an event.
 
@@ -62,10 +63,10 @@ All messages from the module will have a param named `module`, appended by the l
 
 ```js
   // Send
-  b.send('topic', param1, param2, paramN).then(...);
+  b.send('topic', data).then(...);
 
   // Receive
-  b.on('topic', (param1, param2, paramN)) {
+  b.on('topic', (data) => {
     // Callback
   });
 ```

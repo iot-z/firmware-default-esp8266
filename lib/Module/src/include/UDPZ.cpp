@@ -104,11 +104,10 @@ void UDPZ::loop()
     _remotePort  = Udp.remotePort();
 
     if (_remotePort == _port && _remoteIP == _ip) {
-      now = millis();
+      _lastTalkTime = millis();
 
       Udp.read(_packetBuffer, _packetSize);
       _packetBuffer[_packetSize] = '\0';
-      _lastTalkTime = now;
 
       StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
       JsonObject& message = jsonBuffer.parseObject(_packetBuffer);
@@ -126,14 +125,16 @@ void UDPZ::loop()
       } else if (strcmp(message["topic"], "connect") == 0) { // Connect
         _isConnected = true;
 
+        _timeout = message["data"]["timeout"];
+
         _onConnectedCb();
       } else { // Message
         #ifdef MODULE_CAN_DEBUG
         Serial.print(_packetSize);
         Serial.print("B packet received from: ");
-        Serial.print(remoteIP);
+        Serial.print(_remoteIP);
         Serial.print(":");
-        Serial.println(remotePort);
+        Serial.println(_remotePort);
         Serial.print("Message: ");
         message.printTo(Serial);
         Serial.println();
@@ -145,7 +146,7 @@ void UDPZ::loop()
   } else if (_isConnected) {
     now = millis();
 
-    if (now - _lastTalkTime > TIMEOUT) {
+    if (now - _lastTalkTime > _timeout) {
       _isConnected = false;
 
       _onDisconnectedCb();

@@ -5,43 +5,6 @@
 
 #include "ModeSlave.h"
 
-// Add interupts for button press (more performance)
-uint8_t resetButtonPin;
-long _startPressReset;
-
-void _onReleaseReset(){
-  uint16_t holdTime = (uint16_t) (millis() - _startPressReset);
-
-  detachInterrupt(resetButtonPin);
-
-  if (holdTime > 5000) {
-    #ifdef MODULE_CAN_DEBUG
-      Serial.println("Long button reset press.");
-    #endif
-
-    Config.clear();
-  } else {
-    #ifdef MODULE_CAN_DEBUG
-      Serial.println("Button reset press.");
-    #endif
-  }
-
-  strcpy(Config.data.deviceMode, CONFIG);
-  Config.save();
-
-  #ifdef MODULE_CAN_DEBUG
-    Serial.println("Restarting...");
-  #endif
-
-  ESP.restart();
-}
-
-void _onPressReset(){
-  _startPressReset = millis();
-  detachInterrupt(resetButtonPin);
-  attachInterrupt(resetButtonPin, _onReleaseReset, FALLING);
-}
-
 ModeSlave::ModeSlave()
 {
   protocol = new UDPZ(Device.ID, Config.data.deviceName, Device.TYPE, Device.VERSION);
@@ -105,12 +68,6 @@ void ModeSlave::setup(IPAddress ip, uint16_t port)
       Serial.print("UDP address assigned on port: ");
       Serial.println(localPort);
     #endif
-
-    // Setup button reset to config mode pin
-    pinMode(RESET_BUTTON_PIN, INPUT);
-    resetButtonPin = RESET_BUTTON_PIN;
-
-    attachInterrupt(RESET_BUTTON_PIN, _onPressReset, RISING);
 
     protocol->onConnected([&](){
       #ifdef MODULE_CAN_DEBUG

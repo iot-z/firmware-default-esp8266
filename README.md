@@ -2,6 +2,11 @@
 
 Default firmware of Module (C++)
 
+## Mode config Network
+Connect on the network created by the module
+Pass: 123456789 (is the detault, but can be changed)
+Access the config page address: 192.168.4.1
+
 ## Todo
 
 - Add a RGB led for inform state

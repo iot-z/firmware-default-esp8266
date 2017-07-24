@@ -5,10 +5,11 @@ String TYPE    = "Slave Default";
 String VERSION = "1.0.0";
 
 void setup() {
-  // Init Serial for log data
-  Serial.begin(115200);
-
-  delay(42);
+  #ifdef MODULE_CAN_DEBUG
+    // Init Serial for log data
+    Serial.begin(115200);
+    delay(42);
+  #endif
 
   // Module.RESET_BUTTON_PIN = D1;
   // Module.LED_STATUS_PIN = LED_BUILTIN;
