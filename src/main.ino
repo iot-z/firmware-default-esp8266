@@ -7,7 +7,7 @@ String VERSION = "1.0.0";
 void setup() {
   #ifdef MODULE_CAN_DEBUG
     // Init Serial for log data
-    Serial.begin(115200);
+    Serial.begin(9600);
     delay(42);
   #endif
 

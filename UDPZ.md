@@ -79,7 +79,7 @@ All messages from the module will have a param named `module`, appended by the l
   Module.send("topic", JsonObject& data);
 
   // Receive
-  Module.on("topic", [&](String* params)) {
+  Module.on("topic", [&](String* params) {
     // Callback
   });
 ```
