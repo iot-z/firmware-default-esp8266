@@ -169,53 +169,21 @@ bool ModuleCore::isModeConfig()
 
 void ModuleCore::send(const char* topic)
 {
-  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-  JsonObject& message = jsonBuffer.createObject();
-  message["topic"] = topic;
-
-  _modeSlave->send(message);
+  _modeSlave->send(topic);
 }
 
 void ModuleCore::send(const char* topic, JsonObject& data)
 {
-  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-  JsonObject& message = jsonBuffer.createObject();
-  message["topic"] = topic;
-  message["data"] = data;
-
-  _modeSlave->send(message);
+  _modeSlave->send(topic, data);
 }
 
-void ModuleCore::send(const char* topic, String& data)
-{
-  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-  JsonObject& message = jsonBuffer.createObject();
-  message["topic"] = topic;
-  message["data"] = data.c_str();
-
-  _modeSlave->send(message);
-}
-
-void ModuleCore::send(const char* topic, const char* data)
-{
-  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-  JsonObject& message = jsonBuffer.createObject();
-  message["topic"] = topic;
-  message["data"] = data;
-
-  _modeSlave->send(message);
-}
-
-void ModuleCore::on(const char* eventName, std::function<void(JsonObject&, JsonObject&)> cb)
+void ModuleCore::on(const char* eventName, std::function<void(JsonObject& in, JsonObject& out)> cb)
 {
   _modeSlave->on(eventName, cb);
 }
 
 void ModuleCore::createDefaultAPI()
 {
-  StaticJsonBuffer<0> b;
-  JsonObject& r = b.createObject();
-
   on("pinMode", [](JsonObject& in, JsonObject& out) {
     uint8_t pin = in["pin"];
     String mode = in["mode"];
@@ -227,6 +195,7 @@ void ModuleCore::createDefaultAPI()
     uint8_t pin  = in["pin"];
     String level = in["level"];
     Serial.println(pin);
+    Serial.println(level);
 
     digitalWrite(pin, level == "1" ? HIGH : LOW);
   });

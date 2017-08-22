@@ -24,15 +24,12 @@ UDPZ::~UDPZ()
 void UDPZ::_connect()
 {
   StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-  JsonObject& message = jsonBuffer.createObject();
-  message["topic"] = "connect";
+  JsonObject& data = jsonBuffer.createObject();
+  data["name"]     = _name;
+  data["type"]     = _type;
+  data["version"]  = _version;
 
-  JsonObject& data = message.createNestedObject("data");
-  data["name"] = _name;
-  data["type"] = _type;
-  data["version"] = _version;
-
-  send(message);
+  send("connect", data);
 }
 
 void UDPZ::connect(IPAddress ip, uint16_t port)
@@ -50,11 +47,7 @@ void UDPZ::reconnect()
 
 void UDPZ::disconnect()
 {
-  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-  JsonObject& message = jsonBuffer.createObject();
-  message["topic"] = "disconnect";
-
-  send(message);
+  send("disconnect");
 }
 
 bool UDPZ::connected()
@@ -72,7 +65,7 @@ void UDPZ::onDisconnected(std::function<void()> cb)
   _onDisconnectedCb = cb;
 }
 
-void UDPZ::onMessage(std::function<void(JsonObject& message)> cb)
+void UDPZ::onMessage(std::function<void(const char* topic, JsonObject& inData, JsonObject& outData)> cb)
 {
   _onMessageCb = cb;
 }
@@ -110,24 +103,27 @@ void UDPZ::loop()
       _packetBuffer[_packetSize] = '\0';
 
       StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-      JsonObject& message = jsonBuffer.parseObject(_packetBuffer);
+      JsonObject& payload = jsonBuffer.parseObject(_packetBuffer);
 
-      if (strcmp(message["topic"], "ping") == 0) { // Ping
-        StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-        JsonObject& messagePing = jsonBuffer.createObject();
-        messagePing["topic"] = "ping";
+      StaticJsonBuffer<PACKET_SIZE> outJsonBuffer;
+      JsonObject& outData = outJsonBuffer.createObject();
 
-        send(messagePing);
-      } else if (strcmp(message["topic"], "disconnect") == 0) { // Disconnect
+      if (strcmp(payload["topic"], "ping") == 0) { // Ping
+        send(payload["messageId"]);
+      } else if (strcmp(payload["topic"], "disconnect") == 0) { // Disconnect
         _isConnected = false;
 
         _onDisconnectedCb();
-      } else if (strcmp(message["topic"], "connect") == 0) { // Connect
+
+        send(payload["messageId"]);
+      } else if (strcmp(payload["topic"], "connect") == 0) { // Connect
         _isConnected = true;
 
-        _timeout = message["data"]["timeout"];
+        _timeout = payload["data"]["timeout"];
 
         _onConnectedCb();
+
+        send(payload["messageId"]);
       } else { // Message
         #ifdef MODULE_CAN_DEBUG
         Serial.print(_packetSize);
@@ -136,12 +132,15 @@ void UDPZ::loop()
         Serial.print(":");
         Serial.println(_remotePort);
         Serial.print("Message: ");
-        message.printTo(Serial);
+        payload.printTo(Serial);
         Serial.println();
         #endif
 
-        _onMessageCb(message);
+        _onMessageCb(payload["topic"], payload["data"], outData);
+
+        send(payload["messageId"], outData);
       }
+
     }
   } else if (_isConnected) {
     now = millis();
@@ -154,9 +153,20 @@ void UDPZ::loop()
   }
 }
 
-void UDPZ::send(JsonObject& message)
+void UDPZ::send(const char* topic)
 {
+  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+  JsonObject& data = jsonBuffer.createObject();
+  send(topic, data);
+}
+
+void UDPZ::send(const char* topic, JsonObject& data)
+{
+  StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
+  JsonObject& message = jsonBuffer.createObject();
   message["moduleId"] = _id;
+  message["topic"]    = topic;
+  message["data"]     = data;
 
   #ifdef MODULE_CAN_DEBUG
     Serial.print("Send message: ");

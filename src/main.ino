@@ -1,7 +1,7 @@
 #include "Module.h"
 
 String ID      = "031d8494-9d53-4f2c-bd4c-72e5fc5b3080";
-String TYPE    = "Slave Default";
+String TYPE    = "Module Default";
 String VERSION = "1.0.0";
 
 void setup() {

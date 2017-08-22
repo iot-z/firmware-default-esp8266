@@ -38,8 +38,6 @@ class ModuleCore
 
   void send(const char* topic);
   void send(const char* topic, JsonObject& data);
-  void send(const char* topic, String& data);
-  void send(const char* topic, const char* data);
 
   void on(const char* eventName, std::function<void(JsonObject&, JsonObject&)> cb);
 

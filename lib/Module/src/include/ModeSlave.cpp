@@ -14,12 +14,17 @@ ModeSlave::~ModeSlave()
 {
 }
 
-void ModeSlave::send(JsonObject& data)
+void ModeSlave::send(const char* topic)
 {
-  protocol->send(data);
+  protocol->send(topic);
 }
 
-void ModeSlave::on(const char* eventName, std::function<void(JsonObject&, JsonObject&)> cb)
+void ModeSlave::send(const char* topic, JsonObject& data)
+{
+  protocol->send(topic, data);
+}
+
+void ModeSlave::on(const char* eventName, std::function<void(JsonObject& in, JsonObject& out)> cb)
 {
   int8_t foundIndex = _findEventIndex(eventName);
 
@@ -83,8 +88,8 @@ void ModeSlave::setup(IPAddress ip, uint16_t port)
       #endif
     });
 
-    protocol->onMessage([&](JsonObject& payload){
-      _onMessage(payload);
+    protocol->onMessage([&](const char* topic, JsonObject& inData, JsonObject& outData){
+      _onMessage(topic, inData, outData);
     });
 
     _lastConnectionTry = millis();
@@ -112,27 +117,16 @@ void ModeSlave::loop()
   }
 }
 
-void ModeSlave::_onMessage(JsonObject& payload)
+void ModeSlave::_onMessage(const char* topic, JsonObject& inData, JsonObject& outData)
 {
-  int8_t foundIndex = _findEventIndex(payload["topic"]);
+  int8_t foundIndex = _findEventIndex(topic);
 
   if (foundIndex != -1) {
-    StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-    JsonObject& out = jsonBuffer.createObject();
-    _cbFunctions[foundIndex](payload["data"], out);
-
-    if (payload.containsKey("messageId")) {
-      StaticJsonBuffer<PACKET_SIZE> jsonBuffer;
-      JsonObject& message = jsonBuffer.createObject();
-      message["topic"] = payload["messageId"];
-      message["data"] = out;
-
-      send(message);
-    }
+    _cbFunctions[foundIndex](inData, outData);
   } else {
     #ifdef MODULE_CAN_DEBUG
       Serial.print("Command not found: ");
-      Serial.println((const char *) payload["topic"]);
+      Serial.println((const char*) topic);
     #endif
   }
 }

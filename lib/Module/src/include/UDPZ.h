@@ -32,19 +32,20 @@ class UDPZ
 
     int16_t setup();
 
-    void connect(IPAddress ip, uint16_t port);
+    void connect(IPAddress, uint16_t);
     void reconnect();
     void disconnect();
     bool connected();
     void loop();
-    void send(JsonObject& message);
+    void send(const char* topic);
+    void send(const char* topic, JsonObject& data);
     void onConnected(std::function<void()> cb);
     void onDisconnected(std::function<void()> cb);
-    void onMessage(std::function<void(JsonObject& params)> cb);
+    void onMessage(std::function<void(const char* topic, JsonObject& inData, JsonObject& outData)> cb);
   private:
     std::function<void()> _onConnectedCb;
     std::function<void()> _onDisconnectedCb;
-    std::function<void(JsonObject& params)> _onMessageCb;
+    std::function<void(const char* topic, JsonObject& inData, JsonObject& outData)> _onMessageCb;
 
     const char* _id;
     const char* _name;

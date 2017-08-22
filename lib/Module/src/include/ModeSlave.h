@@ -34,7 +34,8 @@ class ModeSlave
   void setup(IPAddress ip, uint16_t port);
   void loop();
 
-  void send(JsonObject& data);
+  void send(const char* topic);
+  void send(const char* topic, JsonObject& data);
 
   void on(const char* eventName, std::function<void(JsonObject&, JsonObject&)> cb);
 
@@ -47,9 +48,9 @@ class ModeSlave
 
   uint8_t _cbIndex = 0;
   const char* _cbNames[MAX_CALLBACKS];
-  std::function<void(JsonObject&, JsonObject&)> _cbFunctions[MAX_CALLBACKS];
+  std::function<void(JsonObject& in, JsonObject& out)> _cbFunctions[MAX_CALLBACKS];
 
-  void _onMessage(JsonObject& payload);
+  void _onMessage(const char* topic, JsonObject& in, JsonObject& out);
   int8_t _findEventIndex(const char* eventName);
 };
 
