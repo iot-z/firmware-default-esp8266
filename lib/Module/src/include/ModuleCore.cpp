@@ -184,6 +184,14 @@ void ModuleCore::on(const char* eventName, std::function<void(JsonObject& in, Js
 
 void ModuleCore::createDefaultAPI()
 {
+  on("setDeviceName", [](JsonObject& in, JsonObject& out) {
+    String deviceName = in["deviceName"];
+
+    strcpy(Config.data.deviceName, deviceName.c_str());
+
+    Config.save();
+  });
+
   on("pinMode", [](JsonObject& in, JsonObject& out) {
     uint8_t pin = in["pin"];
     String mode = in["mode"];
